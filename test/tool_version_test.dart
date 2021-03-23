@@ -24,7 +24,7 @@ void main() {
   group('ToolVersion', () {
     const String settingsFileName = 'settings.json';
     const String toolName = 'sylph';
-    MemoryFileSystem fs;
+    late MemoryFileSystem fs;
 
     setUp(() {
       fs = MemoryFileSystem();
@@ -36,10 +36,10 @@ void main() {
     });
 
     testUsingContext('get version remotely', () async {
-      final File settingsFile = fs.file(fs.path.join(Cache.flutterRoot, settingsFileName));
+      final File settingsFile = fs.file(fs.path.join(Cache.flutterRoot!, settingsFileName));
       final ToolVersion toolVersion = ToolVersion(toolName, settingsFileName);
-      final String version = await toolVersion.getLatestVersion(forceRemote: true);
-      final String savedVersion = jsonDecode(settingsFile.readAsStringSync())['latestVersion'];
+      final String? version = await toolVersion.getLatestVersion(forceRemote: true);
+      final String? savedVersion = jsonDecode(settingsFile.readAsStringSync())['latestVersion'];
       expect(version, savedVersion);
     }, overrides: <Type, Generator>{
       FileSystem: () => fs,
@@ -64,8 +64,8 @@ void main() {
         ToolVersion.kLatestVersion: latestVersion,
       }));
       final ToolVersion toolVersion = ToolVersion('sylph', settingsPath);
-      final String version = await toolVersion.getLatestVersion();
-      final String savedVersion = jsonDecode(fs.file(settings).readAsStringSync())[ToolVersion.kLatestVersion];
+      final String? version = await toolVersion.getLatestVersion();
+      final String? savedVersion = jsonDecode(fs.file(settings).readAsStringSync())[ToolVersion.kLatestVersion];
       expect(version, savedVersion);
     }, overrides: <Type, Generator>{
       FileSystem: () => fs,
@@ -84,7 +84,7 @@ class MockHttpClient implements HttpClient {
   MockHttpClient(this.statusCode, {this.result});
 
   final int statusCode;
-  final String result;
+  final String? result;
 
   @override
   Future<HttpClientRequest> getUrl(Uri url) async {
@@ -101,7 +101,7 @@ class MockHttpClientRequest implements HttpClientRequest {
   MockHttpClientRequest(this.statusCode, {this.result});
 
   final int statusCode;
-  final String result;
+  final String? result;
 
   @override
   Future<HttpClientResponse> close() async {
@@ -120,7 +120,7 @@ class MockHttpClientResponse implements HttpClientResponse {
   @override
   final int statusCode;
 
-  final String result;
+  final String? result;
 
   @override
   String get reasonPhrase => '<reason phrase>';
@@ -132,20 +132,20 @@ class MockHttpClientResponse implements HttpClientResponse {
 
   @override
   StreamSubscription<Uint8List> listen(
-    void onData(Uint8List event), {
-    Function onError,
-    void onDone(),
-    bool cancelOnError,
+    void onData(Uint8List event)?, {
+    Function? onError,
+    void onDone()?,
+    bool? cancelOnError,
   }) {
     return Stream<Uint8List>.fromIterable(
-            <Uint8List>[Uint8List.fromList(result.codeUnits)])
+            <Uint8List>[Uint8List.fromList(result!.codeUnits)])
         .listen(onData,
             onError: onError, onDone: onDone, cancelOnError: cancelOnError);
   }
 
   @override
   Future<dynamic> forEach(void Function(Uint8List element) action) {
-    action(Uint8List.fromList(result.codeUnits));
+    action(Uint8List.fromList(result!.codeUnits));
     return Future<void>.value();
   }
 

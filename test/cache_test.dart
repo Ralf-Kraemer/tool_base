@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
@@ -23,10 +24,10 @@ import 'src/testbed.dart';
 
 void main() {
   group('$Cache.checkLockAcquired', () {
-    MockFileSystem mockFileSystem;
+    late MockFileSystem mockFileSystem;
     MemoryFileSystem memoryFileSystem;
-    MockFile mockFile;
-    MockRandomAccessFile mockRandomAccessFile;
+    late MockFile mockFile;
+    late MockRandomAccessFile mockRandomAccessFile;
 
     setUp(() {
       mockFileSystem = MockFileSystem();
@@ -58,7 +59,7 @@ void main() {
       final Directory mockDirectory = MockDirectory();
       when(mockFileSystem.file(argThat(endsWith('lockfile')))).thenReturn(mockFile);
       when(mockFile.existsSync()).thenReturn(true);
-      when(mockFile.openSync(mode: anyNamed('mode'))).thenReturn(mockRandomAccessFile);
+      when(mockFile.openSync(mode: anyNamed('mode')!)).thenReturn(mockRandomAccessFile);
       when(mockFileSystem.systemTempDirectory).thenReturn(mockDirectory);
       when(mockFileSystem.directory(any)).thenReturn(mockDirectory);
       when(mockDirectory.existsSync()).thenReturn(true);
@@ -75,7 +76,7 @@ void main() {
       final Directory mockDirectory = MockDirectory();
       when(mockFileSystem.file(argThat(endsWith('lockfile')))).thenReturn(mockFile);
       when(mockFile.existsSync()).thenReturn(true);
-      when(mockFile.openSync(mode: anyNamed('mode'))).thenThrow(const FileSystemException());
+      when(mockFile.openSync(mode: anyNamed('mode')!)).thenThrow(const FileSystemException());
       when(mockFileSystem.systemTempDirectory).thenReturn(mockDirectory);
       when(mockFileSystem.directory(any)).thenReturn(mockDirectory);
       when(mockDirectory.existsSync()).thenReturn(true);
@@ -93,8 +94,8 @@ void main() {
   });
 
   group('Cache', () {
-    MockCache mockCache;
-    MemoryFileSystem memoryFileSystem;
+    late MockCache mockCache;
+    late MemoryFileSystem memoryFileSystem;
 
     setUp(() {
       mockCache = MockCache();
@@ -162,9 +163,9 @@ void main() {
       when(artifact2.dyLdLibPath).thenReturn('/path/to/gamma:/path/to/delta:/path/to/epsilon');
       when(artifact3.dyLdLibPath).thenReturn(''); // Empty output
       final Cache cache = Cache(artifacts: <CachedArtifact>[artifact1, artifact2, artifact3]);
-      expect(cache.dyLdLibEntry.key, 'DYLD_LIBRARY_PATH');
+      expect(cache.dyLdLibEntry!.key, 'DYLD_LIBRARY_PATH');
       expect(
-        cache.dyLdLibEntry.value,
+        cache.dyLdLibEntry!.value,
         '/path/to/alpha:/path/to/beta:/path/to/gamma:/path/to/delta:/path/to/epsilon',
       );
     }, overrides: <Type, Generator>{
@@ -215,11 +216,11 @@ void main() {
   });
 
   group('EngineCachedArtifact', () {
-    FakeHttpClient fakeHttpClient;
-    MutablePlatform fakePlatform;
-    MemoryFileSystem memoryFileSystem;
-    MockCache mockCache;
-    MockOperatingSystemUtils mockOperatingSystemUtils;
+    late FakeHttpClient fakeHttpClient;
+    late MutablePlatform fakePlatform;
+    late MemoryFileSystem memoryFileSystem;
+    late MockCache mockCache;
+    late MockOperatingSystemUtils mockOperatingSystemUtils;
 
     setUp(() {
       fakeHttpClient = FakeHttpClient();
@@ -227,13 +228,13 @@ void main() {
       memoryFileSystem = MemoryFileSystem();
       mockCache = MockCache();
       mockOperatingSystemUtils = MockOperatingSystemUtils();
-      when(mockOperatingSystemUtils.verifyZip(any)).thenReturn(true);
+      when(mockOperatingSystemUtils.verifyZip(any!)).thenReturn(true);
     });
 
     testUsingContext('makes binary dirs readable and executable by all', () async {
       final Directory artifactDir = fs.systemTempDirectory.createTempSync('artifact.');
       final Directory downloadDir = fs.systemTempDirectory.createTempSync('download.');
-      when(mockCache.getArtifactDirectory(any)).thenReturn(artifactDir);
+      when(mockCache.getArtifactDirectory(any!)).thenReturn(artifactDir);
       when(mockCache.getDownloadDir()).thenReturn(downloadDir);
       final FakeCachedArtifact artifact = FakeCachedArtifact(
         cache: mockCache,
@@ -245,10 +246,10 @@ void main() {
       final Directory dir = memoryFileSystem.systemTempDirectory
           .listSync(recursive: true)
           .whereType<Directory>()
-          .singleWhere((Directory directory) => directory.basename == 'bin_dir', orElse: () => null);
+          .singleWhereOrNull((Directory directory) => directory.basename == 'bin_dir')!;
       expect(dir, isNotNull);
       expect(dir.path, artifactDir.childDirectory('bin_dir').path);
-      verify(mockOperatingSystemUtils.chmod(argThat(hasPath(dir.path)), 'a+r,a+x'));
+      verify(mockOperatingSystemUtils.chmod(argThat(hasPath(dir.path))!, 'a+r,a+x'));
     }, overrides: <Type, Generator>{
       Cache: ()=> mockCache,
       FileSystem: () => memoryFileSystem,
@@ -266,7 +267,7 @@ void main() {
         }
     );
     final Directory mockDirectory = MockDirectory();
-    when(fakeCachedArtifact.cache.getArtifactDirectory(any))
+    when(fakeCachedArtifact.cache.getArtifactDirectory(any!))
         .thenReturn(mockDirectory);
     when(mockDirectory.existsSync()).thenReturn(false);
     when(mockDirectory.createSync(recursive: true))
@@ -283,7 +284,7 @@ void main() {
 class FakeCachedArtifact extends EngineCachedArtifact {
   FakeCachedArtifact({
     String stampName = 'STAMP',
-    @required Cache cache,
+    required Cache cache,
     Set<DevelopmentArtifact> requiredArtifacts = const <DevelopmentArtifact>{},
     this.binaryDirs = const <List<String>>[],
     this.licenseDirs = const <String>[],

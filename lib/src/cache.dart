@@ -75,7 +75,7 @@ class DevelopmentArtifact {
 class Cache {
   /// [rootOverride] is configurable for testing.
   /// [artifacts] is configurable for testing.
-  Cache({ Directory rootOverride, List<CachedArtifact> artifacts }) : _rootOverride = rootOverride {
+  Cache({ Directory? rootOverride, List<CachedArtifact>? artifacts }) : _rootOverride = rootOverride {
     if (artifacts == null) {
       _artifacts.add(MaterialFonts(this));
       _artifacts.add(AndroidEngineArtifacts(this));
@@ -101,17 +101,17 @@ class Cache {
     'storage.googleapis.com',
   ];
 
-  final Directory _rootOverride;
+  final Directory? _rootOverride;
   final List<CachedArtifact> _artifacts = <CachedArtifact>[];
 
   // Initialized by FlutterCommandRunner on startup.
-  static String flutterRoot;
+  static String? flutterRoot;
 
   // Whether to cache artifacts for all platforms. Defaults to only caching
   // artifacts for the current platform.
   bool includeAllPlatforms = false;
 
-  static RandomAccessFile _lock;
+  static RandomAccessFile? _lock;
   static bool _lockEnabled = true;
 
   /// Turn off the [lock]/[releaseLockEarly] mechanism.
@@ -160,11 +160,11 @@ class Cache {
     bool printed = false;
     while (!locked) {
       try {
-        _lock.lockSync();
+        _lock!.lockSync();
         locked = true;
       } on FileSystemException {
         if (!printed) {
-          printTrace('Waiting to be able to obtain lock of Flutter binary artifacts directory: ${_lock.path}');
+          printTrace('Waiting to be able to obtain lock of Flutter binary artifacts directory: ${_lock!.path}');
           printStatus('Waiting for another flutter command to release the startup lock...');
           printed = true;
         }
@@ -177,7 +177,7 @@ class Cache {
   static void releaseLockEarly() {
     if (!_lockEnabled || _lock == null)
       return;
-    _lock.closeSync();
+    _lock!.closeSync();
     _lock = null;
   }
 
@@ -191,15 +191,15 @@ class Cache {
     }
   }
 
-  String _dartSdkVersion;
+  String? _dartSdkVersion;
 
-  String get dartSdkVersion {
+  String? get dartSdkVersion {
     if (_dartSdkVersion == null) {
       // Make the version string more customer-friendly.
       // Changes '2.1.0-dev.8.0.flutter-4312ae32' to '2.1.0 (build 2.1.0-dev.8.0 4312ae32)'
       final String justVersion = platform.version.split(' ')[0];
       _dartSdkVersion = justVersion.replaceFirstMapped(RegExp(r'(\d+\.\d+\.\d+)(.+)'), (Match match) {
-        final String noFlutter = match[2].replaceAll('.flutter-', ' ');
+        final String noFlutter = match[2]!.replaceAll('.flutter-', ' ');
         return '${match[1]} (build ${match[1]}$noFlutter)';
       });
     }
@@ -207,21 +207,21 @@ class Cache {
   }
 
   /// The current version of the Flutter engine the flutter tool will download.
-  String get engineRevision {
+  String? get engineRevision {
     _engineRevision ??= getVersionFor('engine');
     return _engineRevision;
   }
-  String _engineRevision;
+  String? _engineRevision;
 
-  static Cache get instance => context.get<Cache>();
+  static Cache? get instance => context.get<Cache>();
 
   /// Return the top-level directory in the cache; this is `bin/cache`.
   Directory getRoot() {
     String path;
     if (_rootOverride != null)
-      path = fs.path.join(_rootOverride.path, 'bin', 'cache');
+      path = fs.path.join(_rootOverride!.path, 'bin', 'cache');
     else
-      path = fs.path.join(flutterRoot, 'bin', 'cache');
+      path = fs.path.join(flutterRoot!, 'bin', 'cache');
     final Directory dir = fs.directory(path);
     if (!dir.existsSync())
       dir.create(recursive: true);
@@ -233,7 +233,7 @@ class Cache {
     final Directory dir = fs.directory(fs.path.join(getRoot().path, name));
     if (!dir.existsSync()) {
       dir.createSync(recursive: true);
-      os.chmod(dir, '755');
+      os!.chmod(dir, '755');
     }
     return dir;
   }
@@ -250,7 +250,7 @@ class Cache {
     return getCacheArtifacts().childDirectory(name);
   }
 
-  MapEntry<String, String> get dyLdLibEntry {
+  MapEntry<String, String>? get dyLdLibEntry {
     if (_dyLdLibEntry != null) {
       return _dyLdLibEntry;
     }
@@ -264,7 +264,7 @@ class Cache {
     _dyLdLibEntry = MapEntry<String, String>('DYLD_LIBRARY_PATH', paths.join(':'));
     return _dyLdLibEntry;
   }
-  MapEntry<String, String> _dyLdLibEntry;
+  MapEntry<String, String>? _dyLdLibEntry;
 
   /// The web sdk has to be co-located with the dart-sdk so that they can share source
   /// code.
@@ -272,14 +272,14 @@ class Cache {
     return getRoot().childDirectory('flutter_web_sdk');
   }
 
-  String getVersionFor(String artifactName) {
+  String? getVersionFor(String artifactName) {
     final File versionFile = fs.file(fs.path.join(
-        _rootOverride?.path ?? flutterRoot, 'bin', 'internal',
+        _rootOverride?.path ?? flutterRoot!, 'bin', 'internal',
         '$artifactName.version'));
     return versionFile.existsSync() ? versionFile.readAsStringSync().trim() : null;
   }
 
-  String getStampFor(String artifactName) {
+  String? getStampFor(String artifactName) {
     final File stampFile = getStampFileFor(artifactName);
     return stampFile.existsSync() ? stampFile.readAsStringSync().trim() : null;
   }
@@ -308,7 +308,7 @@ class Cache {
     final Directory serviceDir = fs.directory(fs.path.join(thirdPartyDir.path, serviceName));
     if (!serviceDir.existsSync()) {
       serviceDir.createSync(recursive: true);
-      os.chmod(serviceDir, '755');
+      os!.chmod(serviceDir, '755');
     }
 
     final File cachedFile = fs.file(fs.path.join(serviceDir.path, url.pathSegments.last));
@@ -348,18 +348,18 @@ class Cache {
   }
 
   Future<bool> areRemoteArtifactsAvailable({
-    String engineVersion,
+    String? engineVersion,
     bool includeAllPlatforms = true,
   }) async {
-    final bool includeAllPlatformsState = cache.includeAllPlatforms;
+    final bool includeAllPlatformsState = cache!.includeAllPlatforms;
     bool allAvailible = true;
-    cache.includeAllPlatforms = includeAllPlatforms;
+    cache!.includeAllPlatforms = includeAllPlatforms;
     for (CachedArtifact cachedArtifact in _artifacts) {
       if (cachedArtifact is EngineCachedArtifact) {
         allAvailible &= await cachedArtifact.checkForArtifacts(engineVersion);
       }
     }
-    cache.includeAllPlatforms = includeAllPlatformsState;
+    cache!.includeAllPlatforms = includeAllPlatformsState;
     return allAvailible;
   }
 }
@@ -382,7 +382,7 @@ abstract class CachedArtifact {
   final Set<DevelopmentArtifact> developmentArtifacts;
 
   Directory get location => cache.getArtifactDirectory(name);
-  String get version => cache.getVersionFor(name);
+  String? get version => cache.getVersionFor(name);
 
   /// Keep track of the files we've downloaded for this execution so we
   /// can delete them after completion. We don't delete them right after
@@ -419,7 +419,7 @@ abstract class CachedArtifact {
       }
     }
     await updateInner();
-    cache.setStampFor(stampName, version);
+    cache.setStampFor(stampName, version!);
     _removeDownloadedFiles();
   }
 
@@ -444,20 +444,20 @@ abstract class CachedArtifact {
   Future<void> updateInner();
 
   String get _storageBaseUrl {
-    final String overrideUrl = platform.environment['FLUTTER_STORAGE_BASE_URL'];
+    final String? overrideUrl = platform.environment['FLUTTER_STORAGE_BASE_URL'];
     if (overrideUrl == null)
       return 'https://storage.googleapis.com';
     _maybeWarnAboutStorageOverride(overrideUrl);
     return overrideUrl;
   }
 
-  Uri _toStorageUri(String path) => Uri.parse('$_storageBaseUrl/$path');
+  Uri _toStorageUri(String? path) => Uri.parse('$_storageBaseUrl/$path');
 
   /// Download an archive from the given [url] and unzip it to [location].
   Future<void> _downloadArchive(String message, Uri url, Directory location, bool verifier(File f), void extractor(File f, Directory d)) {
     return _withDownloadFile('${flattenNameSubdirs(url)}', (File tempFile) async {
       if (!verifier(tempFile)) {
-        final Status status = logger.startProgress(message, timeout: timeoutConfiguration.slowOperation);
+        final Status status = logger!.startProgress(message, timeout: timeoutConfiguration.slowOperation)!;
         try {
           await _downloadFile(url, tempFile);
           status.stop();
@@ -466,7 +466,7 @@ abstract class CachedArtifact {
           rethrow;
         }
       } else {
-        logger.printTrace('$message (cached)');
+        logger!.printTrace('$message (cached)');
       }
       _ensureExists(location);
       extractor(tempFile, location);
@@ -475,12 +475,12 @@ abstract class CachedArtifact {
 
   /// Download a zip archive from the given [url] and unzip it to [location].
   Future<void> _downloadZipArchive(String message, Uri url, Directory location) {
-    return _downloadArchive(message, url, location, os.verifyZip, os.unzip);
+    return _downloadArchive(message, url, location, os!.verifyZip, os!.unzip);
   }
 
   /// Download a gzipped tarball from the given [url] and unpack it to [location].
   Future<void> _downloadZippedTarball(String message, Uri url, Directory location) {
-    return _downloadArchive(message, url, location, os.verifyGzip, os.unpack);
+    return _downloadArchive(message, url, location, os!.verifyGzip, os!.unpack);
   }
 
   /// Create a temporary file and invoke [onTemporaryFile] with the file as
@@ -497,7 +497,7 @@ bool _hasWarnedAboutStorageOverride = false;
 void _maybeWarnAboutStorageOverride(String overrideUrl) {
   if (_hasWarnedAboutStorageOverride)
     return;
-  logger.printStatus(
+  logger!.printStatus(
     'Flutter assets will be downloaded from $overrideUrl. Make sure you trust this source!',
     emphasis: true,
   );
@@ -531,10 +531,10 @@ class FlutterWebSdk extends CachedArtifact {
   );
 
   @override
-  Directory get location => cache.getWebSdkDirectory();
+  Directory get location => cache!.getWebSdkDirectory();
 
   @override
-  String get version => cache.getVersionFor('engine');
+  String? get version => cache!.getVersionFor('engine');
 
   @override
   Future<void> updateInner() async {
@@ -585,7 +585,7 @@ abstract class EngineCachedArtifact extends CachedArtifact {
 
   @override
   bool isUpToDateInner() {
-    final Directory pkgDir = cache.getCacheDir('pkg');
+    final Directory pkgDir = cache!.getCacheDir('pkg');
     for (String pkgName in getPackageDirs()) {
       final String pkgPath = fs.path.join(pkgDir.path, pkgName);
       if (!fs.directory(pkgPath).existsSync()) {
@@ -613,7 +613,7 @@ abstract class EngineCachedArtifact extends CachedArtifact {
   Future<void> updateInner() async {
     final String url = '$_storageBaseUrl/flutter_infra/flutter/$version/';
 
-    final Directory pkgDir = cache.getCacheDir('pkg');
+    final Directory pkgDir = cache!.getCacheDir('pkg');
     for (String pkgName in getPackageDirs()) {
       await _downloadZipArchive('Downloading package $pkgName...', Uri.parse(url + pkgName + '.zip'), pkgDir);
     }
@@ -632,19 +632,19 @@ abstract class EngineCachedArtifact extends CachedArtifact {
         if (frameworkZip.existsSync()) {
           final Directory framework = fs.directory(fs.path.join(dir.path, '$frameworkName.framework'));
           framework.createSync();
-          os.unzip(frameworkZip, framework);
+          os!.unzip(frameworkZip, framework);
         }
       }
     }
 
-    final File licenseSource = fs.file(fs.path.join(Cache.flutterRoot, 'LICENSE'));
+    final File licenseSource = fs.file(fs.path.join(Cache.flutterRoot!, 'LICENSE'));
     for (String licenseDir in getLicenseDirs()) {
       final String licenseDestinationPath = fs.path.join(location.path, licenseDir, 'LICENSE');
       await licenseSource.copy(licenseDestinationPath);
     }
   }
 
-  Future<bool> checkForArtifacts(String engineVersion) async {
+  Future<bool> checkForArtifacts(String? engineVersion) async {
     engineVersion ??= version;
     final String url = '$_storageBaseUrl/flutter_infra/flutter/$engineVersion/';
 
@@ -670,14 +670,14 @@ abstract class EngineCachedArtifact extends CachedArtifact {
   }
 
   void _makeFilesExecutable(Directory dir) {
-    os.chmod(dir, 'a+r,a+x');
+    os!.chmod(dir, 'a+r,a+x');
     for (FileSystemEntity entity in dir.listSync(recursive: true)) {
       if (entity is File) {
         final FileStat stat = entity.statSync();
         final bool isUserExecutable = ((stat.mode >> 6) & 0x1) == 1;
         if (entity.basename == 'flutter_tester' || isUserExecutable) {
           // Make the file readable and executable by all users.
-          os.chmod(entity, 'a+r,a+x');
+          os!.chmod(entity, 'a+r,a+x');
         }
       }
     }
@@ -701,7 +701,7 @@ class FlutterSdk extends EngineCachedArtifact {
     return <List<String>>[
       <String>['common', 'flutter_patched_sdk.zip'],
       <String>['common', 'flutter_patched_sdk_product.zip'],
-      if (cache.includeAllPlatforms)
+      if (cache!.includeAllPlatforms)
         ...<List<String>>[
           <String>['windows-x64', 'windows-x64/artifacts.zip'],
           <String>['linux-x64', 'linux-x64/artifacts.zip'],
@@ -799,7 +799,7 @@ class AndroidEngineArtifacts extends EngineCachedArtifact {
   @override
   List<List<String>> getBinaryDirs() {
     return <List<String>>[
-      if (cache.includeAllPlatforms)
+      if (cache!.includeAllPlatforms)
         ...<List<String>>[
           ..._osxBinaryDirs,
           ..._linuxBinaryDirs,
@@ -839,14 +839,14 @@ class IOSEngineArtifacts extends EngineCachedArtifact {
   @override
   List<List<String>> getBinaryDirs() {
     return <List<String>>[
-      if (platform.isMacOS || cache.includeAllPlatforms)
+      if (platform.isMacOS || cache!.includeAllPlatforms)
         ..._iosBinaryDirs,
     ];
   }
 
   @override
   List<String> getLicenseDirs() {
-    if (cache.includeAllPlatforms || platform.isMacOS) {
+    if (cache!.includeAllPlatforms || platform.isMacOS) {
       return const <String>['ios', 'ios-profile', 'ios-release'];
     }
     return const <String>[];
@@ -886,7 +886,7 @@ class GradleWrapper extends CachedArtifact {
 
   @override
   bool isUpToDateInner() {
-    final Directory wrapperDir = cache.getCacheDir(fs.path.join('artifacts', 'gradle_wrapper'));
+    final Directory wrapperDir = cache!.getCacheDir(fs.path.join('artifacts', 'gradle_wrapper'));
     if (!fs.directory(wrapperDir).existsSync()) {
       return false;
     }
@@ -916,7 +916,7 @@ abstract class _FuchsiaSDKArtifacts extends CachedArtifact {
   final String _path;
 
   @override
-  Directory get location => cache.getArtifactDirectory('fuchsia');
+  Directory get location => cache!.getArtifactDirectory('fuchsia');
 
   Future<void> _doUpdate() {
     final String url = '$_cipdBaseUrl/$_path/+/$version';
@@ -933,10 +933,10 @@ class FlutterRunnerSDKArtifacts extends CachedArtifact {
   });
 
   @override
-  Directory get location => cache.getArtifactDirectory('flutter_runner');
+  Directory get location => cache!.getArtifactDirectory('flutter_runner');
 
   @override
-  String get version => cache.getVersionFor('engine');
+  String? get version => cache!.getVersionFor('engine');
 
   @override
   Future<void> updateInner() async {
@@ -995,7 +995,7 @@ class IosUsbArtifacts extends CachedArtifact {
 
   @override
   String get dyLdLibPath {
-    return cache.getArtifactDirectory(name).path;
+    return cache!.getArtifactDirectory(name).path;
   }
 
   @override
@@ -1043,12 +1043,12 @@ String flattenNameSubdirs(Uri url) {
 /// Download a file from the given [url] and write it to [location].
 Future<void> _downloadFile(Uri url, File location) async {
   _ensureExists(location.parent);
-  final List<int> fileBytes = await fetchUrl(url);
+  final List<int> fileBytes = await (fetchUrl(url) as FutureOr<List<int>>);
   location.writeAsBytesSync(fileBytes, flush: true);
 }
 
 Future<bool> _doesRemoteExist(String message, Uri url) async {
-  final Status status = logger.startProgress(message, timeout: timeoutConfiguration.slowOperation);
+  final Status status = logger!.startProgress(message, timeout: timeoutConfiguration.slowOperation)!;
   final bool exists = await doesRemoteFileExist(url);
   status.stop();
   return exists;

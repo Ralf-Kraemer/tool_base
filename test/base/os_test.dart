@@ -17,7 +17,7 @@ const String kPath1 = '/bar/bin/$kExecutable';
 const String kPath2 = '/another/bin/$kExecutable';
 
 void main() {
-  ProcessManager mockProcessManager;
+  late ProcessManager mockProcessManager;
 
   setUp(() {
     mockProcessManager = MockProcessManager();
@@ -38,7 +38,7 @@ void main() {
       when(mockProcessManager.runSync(<String>['which', 'foo']))
           .thenReturn(ProcessResult(0, 0, kPath1, null));
       final OperatingSystemUtils utils = OperatingSystemUtils();
-      expect(utils.which(kExecutable).path, kPath1);
+      expect(utils.which(kExecutable)!.path, kPath1);
     }, overrides: <Type, Generator>{
       ProcessManager: () => mockProcessManager,
       Platform: () => FakePlatform(operatingSystem: 'linux'),
@@ -73,7 +73,7 @@ void main() {
       when(mockProcessManager.runSync(<String>['where', 'foo']))
           .thenReturn(ProcessResult(0, 0, '$kPath1\n$kPath2', null));
       final OperatingSystemUtils utils = OperatingSystemUtils();
-      expect(utils.which(kExecutable).path, kPath1);
+      expect(utils.which(kExecutable)!.path, kPath1);
     }, overrides: <Type, Generator>{
       ProcessManager: () => mockProcessManager,
       Platform: () => FakePlatform(operatingSystem: 'windows'),

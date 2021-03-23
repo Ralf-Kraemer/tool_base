@@ -11,7 +11,7 @@ import '../src/context.dart';
 
 void main() {
   group('OperatingSystemUtils', () {
-    Directory tempDir;
+    late Directory tempDir;
 
     setUp(() {
       tempDir =
@@ -25,7 +25,7 @@ void main() {
     testUsingContext('makeExecutable', () async {
       final File file = fs.file(fs.path.join(tempDir.path, 'foo.script'));
       file.writeAsStringSync('hello world');
-      os.makeExecutable(file);
+      os!.makeExecutable(file);
 
       // Skip this test on windows.
       if (!platform.isWindows) {

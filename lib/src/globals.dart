@@ -9,9 +9,9 @@ import 'base/logger.dart';
 import 'base/terminal.dart';
 import 'cache.dart';
 
-Logger get logger => context.get<Logger>();
-Cache get cache => Cache.instance;
-Config get config => Config.instance;
+Logger? get logger => context.get<Logger>();
+Cache? get cache => Cache.instance;
+Config? get config => Config.instance;
 //Artifacts get artifacts => Artifacts.instance;
 
 /// Display an error level message to the user. Commands should use this if they
@@ -21,15 +21,15 @@ Config get config => Config.instance;
 /// Set [color] to a [TerminalColor] to color the output, if the logger
 /// supports it. The [color] defaults to [TerminalColor.red].
 void printError(
-  String message, {
-  StackTrace stackTrace,
-  bool emphasis,
-  TerminalColor color,
-  int indent,
-  int hangingIndent,
-  bool wrap,
+  String? message, {
+  StackTrace? stackTrace,
+  bool? emphasis,
+  TerminalColor? color,
+  int? indent,
+  int? hangingIndent,
+  bool? wrap,
 }) {
-  logger.printError(
+  logger!.printError(
     message,
     stackTrace: stackTrace,
     emphasis: emphasis ?? false,
@@ -50,15 +50,15 @@ void printError(
 /// If `indent` is provided, each line of the message will be prepended by the
 /// specified number of whitespaces.
 void printStatus(
-  String message, {
-  bool emphasis,
-  bool newline,
-  TerminalColor color,
-  int indent,
-  int hangingIndent,
-  bool wrap,
+  String? message, {
+  bool? emphasis,
+  bool? newline,
+  TerminalColor? color,
+  int? indent,
+  int? hangingIndent,
+  bool? wrap,
 }) {
-  logger.printStatus(
+  logger!.printStatus(
     message,
     emphasis: emphasis ?? false,
     color: color,
@@ -71,4 +71,4 @@ void printStatus(
 
 /// Use this for verbose tracing output. Users can turn this output on in order
 /// to help diagnose issues with the toolchain or with their setup.
-void printTrace(String message) => logger.printTrace(message);
+void printTrace(String? message) => logger!.printTrace(message);

@@ -8,32 +8,32 @@ import 'file_system.dart';
 import 'platform.dart';
 
 class Config {
-  Config([File configFile]) {
+  Config([File? configFile]) {
     _configFile = configFile ?? fs.file(fs.path.join(_userHomeDir(), '.flutter_settings'));
     if (_configFile.existsSync())
       _values = json.decode(_configFile.readAsStringSync());
   }
 
-  static Config get instance => context.get<Config>();
+  static Config? get instance => context.get<Config>();
 
-  File _configFile;
+  late File _configFile;
   String get configPath => _configFile.path;
 
-  Map<String, dynamic> _values = <String, dynamic>{};
+  Map<String, dynamic>? _values = <String, dynamic>{};
 
-  Iterable<String> get keys => _values.keys;
+  Iterable<String> get keys => _values!.keys;
 
-  bool containsKey(String key) => _values.containsKey(key);
+  bool containsKey(String key) => _values!.containsKey(key);
 
-  dynamic getValue(String key) => _values[key];
+  dynamic getValue(String key) => _values![key];
 
-  void setValue(String key, Object value) {
-    _values[key] = value;
+  void setValue(String key, Object? value) {
+    _values![key] = value;
     _flushValues();
   }
 
   void removeValue(String key) {
-    _values.remove(key);
+    _values!.remove(key);
     _flushValues();
   }
 

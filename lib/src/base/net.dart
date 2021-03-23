@@ -15,12 +15,12 @@ const int kNetworkProblemExitCode = 50;
 typedef HttpClientFactory = HttpClient Function();
 
 /// Download a file from the given URL and return the bytes.
-Future<List<int>> fetchUrl(Uri url, {int maxAttempts}) async {
+Future<List<int>?> fetchUrl(Uri url, {int? maxAttempts}) async {
   int attempts = 0;
   int durationSeconds = 1;
   while (true) {
     attempts += 1;
-    final List<int> result = await _attempt(url);
+    final List<int>? result = await _attempt(url);
     if (result != null)
       return result;
     if (maxAttempts != null && attempts >= maxAttempts) {
@@ -39,15 +39,15 @@ Future<List<int>> fetchUrl(Uri url, {int maxAttempts}) async {
 Future<bool> doesRemoteFileExist(Uri url) async =>
   (await _attempt(url, onlyHeaders: true)) != null;
 
-Future<List<int>> _attempt(Uri url, { bool onlyHeaders = false }) async {
+Future<List<int>?> _attempt(Uri url, { bool onlyHeaders = false }) async {
   printTrace('Downloading: $url');
   HttpClient httpClient;
   if (context.get<HttpClientFactory>() != null) {
-    httpClient = context.get<HttpClientFactory>()();
+    httpClient = context.get<HttpClientFactory>()!();
   } else {
     httpClient = HttpClient();
   }
-  HttpClientRequest request;
+  late HttpClientRequest request;
   try {
     if (onlyHeaders) {
       request = await httpClient.headUrl(url);
@@ -55,7 +55,7 @@ Future<List<int>> _attempt(Uri url, { bool onlyHeaders = false }) async {
       request = await httpClient.getUrl(url);
     }
   } on ArgumentError catch (error) {
-    final String overrideUrl = platform.environment['FLUTTER_STORAGE_BASE_URL'];
+    final String? overrideUrl = platform.environment['FLUTTER_STORAGE_BASE_URL'];
     if (overrideUrl != null && url.toString().contains(overrideUrl)) {
       printError(error.toString());
       throwToolExit(

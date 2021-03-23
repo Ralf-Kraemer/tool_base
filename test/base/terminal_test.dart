@@ -33,7 +33,7 @@ void main() {
   });
 
   group('ANSI coloring and bold', () {
-    AnsiTerminal terminal;
+    late AnsiTerminal terminal;
 
     setUp(() {
       terminal = AnsiTerminal();
@@ -132,7 +132,7 @@ void main() {
   });
 
   group('character input prompt', () {
-    AnsiTerminal terminalUnderTest;
+    late AnsiTerminal terminalUnderTest;
 
     setUp(() {
       terminalUnderTest = TestTerminal();
@@ -144,7 +144,7 @@ void main() {
         Future<String>.value('\n'), // Not in accepted list
         Future<String>.value('b'),
       ]).asBroadcastStream();
-      final String choice = await terminalUnderTest.promptForCharInput(
+      final String? choice = await terminalUnderTest.promptForCharInput(
         <String>['a', 'b', 'c'],
         prompt: 'Please choose something',
       );
@@ -162,7 +162,7 @@ void main() {
       mockStdInStream = Stream<String>.fromFutures(<Future<String>>[
         Future<String>.value('\n'), // Not in accepted list
       ]).asBroadcastStream();
-      final String choice = await terminalUnderTest.promptForCharInput(
+      final String? choice = await terminalUnderTest.promptForCharInput(
         <String>['a', 'b', 'c'],
         prompt: 'Please choose something',
         displayAcceptedCharacters: false,
@@ -177,11 +177,11 @@ void main() {
   });
 }
 
-Stream<String> mockStdInStream;
+Stream<String>? mockStdInStream;
 
 class TestTerminal extends AnsiTerminal {
   @override
-  Stream<String> get keystrokes {
+  Stream<String>? get keystrokes {
     return mockStdInStream;
   }
 }

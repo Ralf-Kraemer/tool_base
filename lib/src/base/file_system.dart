@@ -32,7 +32,7 @@ void ensureDirectoryExists(String filePath) {
   try {
     fs.directory(dirPath).createSync(recursive: true);
   } on FileSystemException catch (e) {
-    throwToolExit('Failed to create directory "$dirPath": ${e.osError.message}');
+    throwToolExit('Failed to create directory "$dirPath": ${e.osError!.message}');
   }
 }
 
@@ -40,7 +40,7 @@ void ensureDirectoryExists(String filePath) {
 /// specified for each source/destination file pair.
 ///
 /// Creates `destDir` if needed.
-void copyDirectorySync(Directory srcDir, Directory destDir, [ void onFileCopied(File srcFile, File destFile) ]) {
+void copyDirectorySync(Directory srcDir, Directory destDir, [ void onFileCopied(File srcFile, File destFile)? ]) {
   if (!srcDir.existsSync())
     throw Exception('Source directory "${srcDir.path}" does not exist, nothing to copy');
 
@@ -123,7 +123,7 @@ String escapePath(String path) => platform.isWindows ? path.replaceAll('\\', '\\
 /// Returns true, if [entity] does not exist.
 ///
 /// Returns false, if [entity] exists, but [referenceFile] does not.
-bool isOlderThanReference({ @required FileSystemEntity entity, @required File referenceFile }) {
+bool isOlderThanReference({ required FileSystemEntity entity, required File referenceFile }) {
   if (!entity.existsSync())
     return true;
   return referenceFile.existsSync()

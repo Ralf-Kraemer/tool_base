@@ -11,7 +11,7 @@ import '../src/common.dart';
 void main() {
   group('AppContext', () {
     group('global getter', () {
-      bool called;
+      late bool called;
 
       setUp(() {
         called = false;
@@ -87,7 +87,7 @@ void main() {
           () async {
         final Completer<void> outer = Completer<void>();
         final Completer<void> inner = Completer<void>();
-        String value;
+        String? value;
         await context.run<void>(
           body: () {
             outer.future.then<void>((_) {
@@ -107,10 +107,10 @@ void main() {
 
       test('caches generated override values', () async {
         int consultationCount = 0;
-        String value;
+        String? value;
         await context.run<void>(
           body: () async {
-            final StringBuffer buf = StringBuffer(context.get<String>());
+            final StringBuffer buf = StringBuffer(context.get<String>()!);
             buf.write(context.get<String>());
             await context.run<void>(body: () {
               buf.write(context.get<String>());
@@ -130,10 +130,10 @@ void main() {
 
       test('caches generated fallback values', () async {
         int consultationCount = 0;
-        String value;
+        String? value;
         await context.run(
           body: () async {
-            final StringBuffer buf = StringBuffer(context.get<String>());
+            final StringBuffer buf = StringBuffer(context.get<String>()!);
             buf.write(context.get<String>());
             await context.run<void>(body: () {
               buf.write(context.get<String>());
@@ -162,14 +162,14 @@ void main() {
       });
 
       test('throws if generator has dependency cycle', () async {
-        final Future<String> value = context.run<String>(
+        final Future<String?> value = context.run<String?>(
           body: () async {
             return context.get<String>();
           },
           fallbacks: <Type, Generator>{
-            int: () => int.parse(context.get<String>()),
+            int: () => int.parse(context.get<String>()!),
             String: () => '${context.get<double>()}',
-            double: () => context.get<int>() * 1.0,
+            double: () => context.get<int>()! * 1.0,
           },
         );
         try {
@@ -199,7 +199,7 @@ void main() {
       });
 
       group('fallbacks', () {
-        bool called;
+        late bool called;
 
         setUp(() {
           called = false;

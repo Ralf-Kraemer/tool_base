@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:file/file.dart';
 import 'package:pub_cache/pub_cache.dart';
 
@@ -20,19 +21,19 @@ class ToolVersion {
   ToolVersion(this.packageName, this.settingsPath, [this._url]);
 
   final String packageName;
-  final String settingsPath;
-  Uri _url;
+  final String? settingsPath;
+  Uri? _url;
 
-  static ToolVersion get instance => context.get<ToolVersion>();
+  static ToolVersion? get instance => context.get<ToolVersion>();
 
 //  http.Client _client;
-  File _file;
-  Config _config;
+  File? _file;
+  Config? _config;
 
 //  http.Client get client => _client ??= http.Client();
 
   File get file =>
-      _file ??= fs.file(fs.path.join(Cache.flutterRoot, settingsPath));
+      _file ??= fs.file(fs.path.join(Cache.flutterRoot!, settingsPath));
 
   Config get config => _config ??= Config(file);
 
@@ -49,13 +50,13 @@ class ToolVersion {
   static const String kLatestVersion = 'latestVersion';
   static const String kVersionDate = 'versionDate';
 
-  Future<String> getLatestVersion({bool forceRemote = false}) async =>
+  Future<String?> getLatestVersion({bool forceRemote = false}) async =>
       await _getVar(kLatestVersion, 'packageVersion', forceRemote);
 
 //  void setVersion(String version) => config.setValue(kVersion, version);
 
   Future<String> getVersionDate({bool forceRemote = false}) async {
-    String versionDate = await _getVar(kVersionDate, 'updated', forceRemote);
+    String? versionDate = await _getVar(kVersionDate, 'updated', forceRemote);
     // hack, can't find real date
     if (versionDate == null) {
       versionDate = DateTime.now().toIso8601String();
@@ -67,16 +68,16 @@ class ToolVersion {
 //  void setVersionDate(String versionDate) =>
 //      config.setValue(kVersionDate, versionDate);
 
-  Future<String> _getVar(
+  Future<String?> _getVar(
     String varName,
     String metric,
     bool forceRemote,
   ) async {
     if (forceRemote) {
-      final List<int> charCodes = await fetchUrl(url);
+      final List<int> charCodes = await (fetchUrl(url) as FutureOr<List<int>>);
       final Map<String, dynamic> metrics =
           jsonDecode(String.fromCharCodes(charCodes));
-      final String varValue = metrics['scorecard'][metric];
+      final String? varValue = metrics['scorecard'][metric];
       // save locally ??
       config.setValue(varName, varValue);
       return varValue;
@@ -88,7 +89,7 @@ class ToolVersion {
   String getInstalledVersion() {
     return PubCache()
         .getGlobalApplications()
-        .firstWhere((app) => app.name == packageName, orElse: () => null)
+        .firstWhereOrNull((app) => app.name == packageName)!
         .version
         .toString();
   }
