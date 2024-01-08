@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:collection/collection.dart' show IterableExtension;
-import 'package:file/file.dart';
 import 'package:pub_cache/pub_cache.dart';
 
 import 'base/config.dart';
@@ -89,7 +87,7 @@ class ToolVersion {
   String getInstalledVersion() {
     return PubCache()
         .getGlobalApplications()
-        .firstWhereOrNull((app) => app.name == packageName)!
+        .firstWhereOrNull((Application app) => app.name == packageName)!
         .version
         .toString();
   }

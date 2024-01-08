@@ -5,8 +5,6 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:meta/meta.dart';
-
 /// Generates an [AppContext] value.
 ///
 /// Generators are allowed to return `null`, in which case the context will
