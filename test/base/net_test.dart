@@ -5,10 +5,10 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:quiver/testing/async.dart';
 import 'package:tool_base/src/base/io.dart' as io;
 import 'package:tool_base/src/base/net.dart';
 import 'package:tool_base/src/base/platform.dart';
-import 'package:quiver/testing/async.dart';
 
 import '../src/common.dart';
 import '../src/context.dart';
@@ -25,7 +25,8 @@ void main() {
       });
       expect(testLogger.statusText, '');
       time.elapse(const Duration(milliseconds: 10000));
-      expect(testLogger.statusText,
+      expect(
+        testLogger.statusText,
         'Download failed -- attempting retry 1 in 1 second...\n'
         'Download failed -- attempting retry 2 in 2 seconds...\n'
         'Download failed -- attempting retry 3 in 4 seconds...\n'
@@ -48,7 +49,8 @@ void main() {
       });
       expect(testLogger.statusText, '');
       time.elapse(const Duration(milliseconds: 10000));
-      expect(testLogger.statusText,
+      expect(
+        testLogger.statusText,
         'Download failed -- attempting retry 1 in 1 second...\n'
         'Download failed -- attempting retry 2 in 2 seconds...\n'
         'Download failed -- attempting retry 3 in 4 seconds...\n'
@@ -71,7 +73,8 @@ void main() {
       });
       expect(testLogger.statusText, '');
       time.elapse(const Duration(milliseconds: 10000));
-      expect(testLogger.statusText,
+      expect(
+        testLogger.statusText,
         'Download failed -- attempting retry 1 in 1 second...\n'
         'Download failed -- attempting retry 2 in 2 seconds...\n'
         'Download failed -- attempting retry 3 in 4 seconds...\n'
@@ -83,8 +86,8 @@ void main() {
     expect(testLogger.traceText, contains('Download error: SocketException'));
   }, overrides: <Type, Generator>{
     HttpClientFactory: () => () => MockHttpClientThrowing(
-      const io.SocketException('test exception handling'),
-    ),
+          const io.SocketException('test exception handling'),
+        ),
   });
 
   testUsingContext('no retry from HandshakeException', () async {
@@ -103,8 +106,8 @@ void main() {
     expect(testLogger.traceText, contains('HandshakeException'));
   }, overrides: <Type, Generator>{
     HttpClientFactory: () => () => MockHttpClientThrowing(
-      const io.HandshakeException('test exception handling'),
-    ),
+          const io.HandshakeException('test exception handling'),
+        ),
   });
 
   testUsingContext('check for bad override on ArgumentError', () async {
@@ -124,12 +127,9 @@ void main() {
     expect(error, contains('FLUTTER_STORAGE_BASE_URL'));
   }, overrides: <Type, Generator>{
     HttpClientFactory: () => () => MockHttpClientThrowing(
-      ArgumentError('test exception handling'),
-    ),
-    Platform: () => MutablePlatform()
-      ..environment = <String, String>{
-        'FLUTTER_STORAGE_BASE_URL': 'example.invalid'
-      },
+          ArgumentError('test exception handling'),
+        ),
+    Platform: () => MutablePlatform()..environment = <String, String>{'FLUTTER_STORAGE_BASE_URL': 'example.invalid'},
   });
 
   testUsingContext('retry from HttpException', () async {
@@ -142,7 +142,8 @@ void main() {
       });
       expect(testLogger.statusText, '');
       time.elapse(const Duration(milliseconds: 10000));
-      expect(testLogger.statusText,
+      expect(
+        testLogger.statusText,
         'Download failed -- attempting retry 1 in 1 second...\n'
         'Download failed -- attempting retry 2 in 2 seconds...\n'
         'Download failed -- attempting retry 3 in 4 seconds...\n'
@@ -154,8 +155,8 @@ void main() {
     expect(testLogger.traceText, contains('Download error: HttpException'));
   }, overrides: <Type, Generator>{
     HttpClientFactory: () => () => MockHttpClientThrowing(
-      const io.HttpException('test exception handling'),
-    ),
+          const io.HttpException('test exception handling'),
+        ),
   });
 
   testUsingContext('max attempts', () async {
@@ -169,7 +170,8 @@ void main() {
       });
       expect(testLogger.statusText, '');
       time.elapse(const Duration(milliseconds: 10000));
-      expect(testLogger.statusText,
+      expect(
+        testLogger.statusText,
         'Download failed -- attempting retry 1 in 1 second...\n'
         'Download failed -- attempting retry 2 in 2 seconds...\n'
         'Download failed -- retry 3\n',
@@ -277,7 +279,7 @@ class MockHttpClientResponse implements io.HttpClientResponse {
     bool? cancelOnError,
   }) {
     return Stream<Uint8List>.fromFuture(Future<Uint8List>.error(const io.SocketException('test')))
-      .listen(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError);
+        .listen(onData, onError: onError, onDone: onDone, cancelOnError: cancelOnError);
   }
 
   @override

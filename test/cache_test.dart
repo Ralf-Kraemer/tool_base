@@ -3,19 +3,16 @@
 // found in the LICENSE file.
 
 import 'package:collection/collection.dart' show IterableExtension;
-import 'package:file/file.dart';
 import 'package:file/memory.dart';
 import 'package:file_testing/file_testing.dart';
-import 'package:meta/meta.dart';
 import 'package:mockito/mockito.dart';
 import 'package:platform/platform.dart';
-
 import 'package:tool_base/src/base/common.dart';
-import 'package:tool_base/src/cache.dart';
 import 'package:tool_base/src/base/file_system.dart';
 import 'package:tool_base/src/base/io.dart' show InternetAddress, SocketException;
 import 'package:tool_base/src/base/net.dart';
 import 'package:tool_base/src/base/os.dart';
+import 'package:tool_base/src/cache.dart';
 
 import 'src/common.dart';
 import 'src/context.dart';
@@ -64,7 +61,7 @@ void main() {
       when(mockFileSystem.directory(any)).thenReturn(mockDirectory);
       when(mockDirectory.existsSync()).thenReturn(true);
       when(mockDirectory.path).thenReturn('/');
-      final Cache cache=Cache();
+      final Cache cache = Cache();
       await cache.lock();
       Cache.checkLockAcquired();
       Cache.releaseLockEarly();
@@ -106,11 +103,14 @@ void main() {
       final GradleWrapper gradleWrapper = GradleWrapper(mockCache);
       final Directory directory = fs.directory('/Applications/flutter/bin/cache');
       directory.createSync(recursive: true);
-      fs.file(fs.path.join(directory.path, 'artifacts', 'gradle_wrapper', 'gradle', 'wrapper', 'gradle-wrapper.jar')).createSync(recursive: true);
-      when(mockCache.getCacheDir(fs.path.join('artifacts', 'gradle_wrapper'))).thenReturn(fs.directory(fs.path.join(directory.path, 'artifacts', 'gradle_wrapper')));
+      fs
+          .file(fs.path.join(directory.path, 'artifacts', 'gradle_wrapper', 'gradle', 'wrapper', 'gradle-wrapper.jar'))
+          .createSync(recursive: true);
+      when(mockCache.getCacheDir(fs.path.join('artifacts', 'gradle_wrapper')))
+          .thenReturn(fs.directory(fs.path.join(directory.path, 'artifacts', 'gradle_wrapper')));
       expect(gradleWrapper.isUpToDateInner(), false);
     }, overrides: <Type, Generator>{
-      Cache: ()=> mockCache,
+      Cache: () => mockCache,
       FileSystem: () => memoryFileSystem,
     });
 
@@ -118,14 +118,17 @@ void main() {
       final GradleWrapper gradleWrapper = GradleWrapper(mockCache);
       final Directory directory = fs.directory('/Applications/flutter/bin/cache');
       directory.createSync(recursive: true);
-      fs.file(fs.path.join(directory.path, 'artifacts', 'gradle_wrapper', 'gradle', 'wrapper', 'gradle-wrapper.jar')).createSync(recursive: true);
+      fs
+          .file(fs.path.join(directory.path, 'artifacts', 'gradle_wrapper', 'gradle', 'wrapper', 'gradle-wrapper.jar'))
+          .createSync(recursive: true);
       fs.file(fs.path.join(directory.path, 'artifacts', 'gradle_wrapper', 'gradlew')).createSync(recursive: true);
       fs.file(fs.path.join(directory.path, 'artifacts', 'gradle_wrapper', 'gradlew.bat')).createSync(recursive: true);
 
-      when(mockCache.getCacheDir(fs.path.join('artifacts', 'gradle_wrapper'))).thenReturn(fs.directory(fs.path.join(directory.path, 'artifacts', 'gradle_wrapper')));
+      when(mockCache.getCacheDir(fs.path.join('artifacts', 'gradle_wrapper')))
+          .thenReturn(fs.directory(fs.path.join(directory.path, 'artifacts', 'gradle_wrapper')));
       expect(gradleWrapper.isUpToDateInner(), true);
     }, overrides: <Type, Generator>{
-      Cache: ()=> mockCache,
+      Cache: () => mockCache,
       FileSystem: () => memoryFileSystem,
     });
 
@@ -169,7 +172,7 @@ void main() {
         '/path/to/alpha:/path/to/beta:/path/to/gamma:/path/to/delta:/path/to/epsilon',
       );
     }, overrides: <Type, Generator>{
-      Cache: ()=> mockCache,
+      Cache: () => mockCache,
     });
     testUsingContext('failed storage.googleapis.com download shows China warning', () async {
       final CachedArtifact artifact1 = MockCachedArtifact();
@@ -251,7 +254,7 @@ void main() {
       expect(dir.path, artifactDir.childDirectory('bin_dir').path);
       verify(mockOperatingSystemUtils.chmod(argThat(hasPath(dir.path))!, 'a+r,a+x'));
     }, overrides: <Type, Generator>{
-      Cache: ()=> mockCache,
+      Cache: () => mockCache,
       FileSystem: () => memoryFileSystem,
       HttpClientFactory: () => () => fakeHttpClient,
       OperatingSystemUtils: () => mockOperatingSystemUtils,
@@ -260,22 +263,20 @@ void main() {
   });
 
   testUsingContext('throws tool exit on fs exception', () async {
-    final FakeCachedArtifact fakeCachedArtifact = FakeCachedArtifact(
-        cache: MockCache(),
-        requiredArtifacts: <DevelopmentArtifact>{
-          DevelopmentArtifact.android,
-        }
-    );
-    final Directory mockDirectory = MockDirectory();
-    when(fakeCachedArtifact.cache.getArtifactDirectory(any!))
-        .thenReturn(mockDirectory);
-    when(mockDirectory.existsSync()).thenReturn(false);
-    when(mockDirectory.createSync(recursive: true))
-        .thenThrow(const FileSystemException());
-
-    expect(() => fakeCachedArtifact.update(<DevelopmentArtifact>{
+    final FakeCachedArtifact fakeCachedArtifact =
+        FakeCachedArtifact(cache: MockCache(), requiredArtifacts: <DevelopmentArtifact>{
       DevelopmentArtifact.android,
-    }), throwsA(isInstanceOf<ToolExit>()));
+    });
+    final Directory mockDirectory = MockDirectory();
+    when(fakeCachedArtifact.cache.getArtifactDirectory(any!)).thenReturn(mockDirectory);
+    when(mockDirectory.existsSync()).thenReturn(false);
+    when(mockDirectory.createSync(recursive: true)).thenThrow(const FileSystemException());
+
+    expect(
+        () => fakeCachedArtifact.update(<DevelopmentArtifact>{
+              DevelopmentArtifact.android,
+            }),
+        throwsA(isInstanceOf<ToolExit>()));
   }, overrides: <Type, Generator>{
     FileSystem: () => MemoryFileSystem(),
   });
@@ -306,11 +307,17 @@ class FakeCachedArtifact extends EngineCachedArtifact {
 }
 
 class MockFileSystem extends Mock implements FileSystem {}
+
 class MockFile extends Mock implements File {}
+
 class MockDirectory extends Mock implements Directory {}
 
 class MockRandomAccessFile extends Mock implements RandomAccessFile {}
+
 class MockCachedArtifact extends Mock implements CachedArtifact {}
+
 class MockInternetAddress extends Mock implements InternetAddress {}
+
 class MockCache extends Mock implements Cache {}
+
 class MockOperatingSystemUtils extends Mock implements OperatingSystemUtils {}

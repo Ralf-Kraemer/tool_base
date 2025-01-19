@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:tool_base/src/base/io.dart';
-import 'package:tool_base/src/base/file_system.dart';
-import 'package:tool_base/src/base/os.dart';
 import 'package:mockito/mockito.dart';
-import 'package:process/process.dart';
 import 'package:platform/platform.dart';
+import 'package:process/process.dart';
+import 'package:tool_base/src/base/file_system.dart';
+import 'package:tool_base/src/base/io.dart';
+import 'package:tool_base/src/base/os.dart';
 
 import '../src/common.dart';
 import '../src/context.dart';
@@ -25,8 +25,7 @@ void main() {
 
   group('which on POSIX', () {
     testUsingContext('returns null when executable does not exist', () async {
-      when(mockProcessManager.runSync(<String>['which', kExecutable]))
-          .thenReturn(ProcessResult(0, 1, null, null));
+      when(mockProcessManager.runSync(<String>['which', kExecutable])).thenReturn(ProcessResult(0, 1, null, null));
       final OperatingSystemUtils utils = OperatingSystemUtils();
       expect(utils.which(kExecutable), isNull);
     }, overrides: <Type, Generator>{
@@ -35,8 +34,7 @@ void main() {
     });
 
     testUsingContext('returns exactly one result', () async {
-      when(mockProcessManager.runSync(<String>['which', 'foo']))
-          .thenReturn(ProcessResult(0, 0, kPath1, null));
+      when(mockProcessManager.runSync(<String>['which', 'foo'])).thenReturn(ProcessResult(0, 0, kPath1, null));
       final OperatingSystemUtils utils = OperatingSystemUtils();
       expect(utils.which(kExecutable)!.path, kPath1);
     }, overrides: <Type, Generator>{
@@ -60,8 +58,7 @@ void main() {
 
   group('which on Windows', () {
     testUsingContext('returns null when executable does not exist', () async {
-      when(mockProcessManager.runSync(<String>['where', kExecutable]))
-          .thenReturn(ProcessResult(0, 1, null, null));
+      when(mockProcessManager.runSync(<String>['where', kExecutable])).thenReturn(ProcessResult(0, 1, null, null));
       final OperatingSystemUtils utils = OperatingSystemUtils();
       expect(utils.which(kExecutable), isNull);
     }, overrides: <Type, Generator>{

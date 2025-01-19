@@ -25,38 +25,44 @@ class BotDetector {
         // Explicitly stated to not be a bot.
         platform.environment['BOT'] == 'false'
 
-        // Set by the IDEs to the IDE name, so a strong signal that this is not a bot.
-        || platform.environment.containsKey('FLUTTER_HOST')
-        // When set, GA logs to a local file (normally for tests) so we don't need to filter.
-        || platform.environment.containsKey('FLUTTER_ANALYTICS_LOG_FILE')
-    ) {
+            // Set by the IDEs to the IDE name, so a strong signal that this is not a bot.
+            ||
+            platform.environment.containsKey('FLUTTER_HOST')
+            // When set, GA logs to a local file (normally for tests) so we don't need to filter.
+            ||
+            platform.environment.containsKey('FLUTTER_ANALYTICS_LOG_FILE')) {
       return false;
     }
 
     return platform.environment['BOT'] == 'true'
 
         // https://docs.travis-ci.com/user/environment-variables/#Default-Environment-Variables
-        || platform.environment['TRAVIS'] == 'true'
-        || platform.environment['CONTINUOUS_INTEGRATION'] == 'true'
-        || platform.environment.containsKey('CI') // Travis and AppVeyor
+        ||
+        platform.environment['TRAVIS'] == 'true' ||
+        platform.environment['CONTINUOUS_INTEGRATION'] == 'true' ||
+        platform.environment.containsKey('CI') // Travis and AppVeyor
 
         // https://www.appveyor.com/docs/environment-variables/
-        || platform.environment.containsKey('APPVEYOR')
+        ||
+        platform.environment.containsKey('APPVEYOR')
 
         // https://cirrus-ci.org/guide/writing-tasks/#environment-variables
-        || platform.environment.containsKey('CIRRUS_CI')
+        ||
+        platform.environment.containsKey('CIRRUS_CI')
 
         // https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-env-vars.html
-        || (platform.environment.containsKey('AWS_REGION') &&
-            platform.environment.containsKey('CODEBUILD_INITIATOR'))
+        ||
+        (platform.environment.containsKey('AWS_REGION') && platform.environment.containsKey('CODEBUILD_INITIATOR'))
 
         // https://wiki.jenkins.io/display/JENKINS/Building+a+software+project#Buildingasoftwareproject-belowJenkinsSetEnvironmentVariables
-        || platform.environment.containsKey('JENKINS_URL')
+        ||
+        platform.environment.containsKey('JENKINS_URL')
 
         // Properties on Flutter's Chrome Infra bots.
-        || platform.environment['CHROME_HEADLESS'] == '1'
-        || platform.environment.containsKey('BUILDBOT_BUILDERNAME')
-        || platform.environment.containsKey('SWARMING_TASK_ID');
+        ||
+        platform.environment['CHROME_HEADLESS'] == '1' ||
+        platform.environment.containsKey('BUILDBOT_BUILDERNAME') ||
+        platform.environment.containsKey('SWARMING_TASK_ID');
   }
 }
 
@@ -69,9 +75,7 @@ bool get isRunningOnBot {
 String camelCase(String str) {
   int index = str.indexOf('_');
   while (index != -1 && index < str.length - 2) {
-    str = str.substring(0, index) +
-      str.substring(index + 1, index + 2).toUpperCase() +
-      str.substring(index + 2);
+    str = str.substring(0, index) + str.substring(index + 1, index + 2).toUpperCase() + str.substring(index + 2);
     index = str.indexOf('_');
   }
   return str;
@@ -80,14 +84,12 @@ String camelCase(String str) {
 final RegExp _upperRegex = RegExp(r'[A-Z]');
 
 /// Convert `fooBar` to `foo_bar`.
-String snakeCase(String str, [ String sep = '_' ]) {
-  return str.replaceAllMapped(_upperRegex,
-      (Match m) => '${m.start == 0 ? '' : sep}${m[0]!.toLowerCase()}');
+String snakeCase(String str, [String sep = '_']) {
+  return str.replaceAllMapped(_upperRegex, (Match m) => '${m.start == 0 ? '' : sep}${m[0]!.toLowerCase()}');
 }
 
 String toTitleCase(String str) {
-  if (str.isEmpty)
-    return str;
+  if (str.isEmpty) return str;
   return str.substring(0, 1).toUpperCase() + str.substring(1);
 }
 
@@ -108,8 +110,7 @@ File getUniqueFile(Directory dir, String baseName, String ext) {
   while (true) {
     final String name = '${baseName}_${i.toString().padLeft(2, '0')}.$ext';
     final File file = fs.file(fs.path.join(dir.path, name));
-    if (!file.existsSync())
-      return file;
+    if (!file.existsSync()) return file;
     i++;
   }
 }
@@ -160,6 +161,7 @@ class ItemListNotifier<T> {
   final StreamController<T> _removedController = StreamController<T>.broadcast();
 
   Stream<T> get onAdded => _addedController.stream;
+
   Stream<T> get onRemoved => _removedController.stream;
 
   List<T> get items => _items.toList();
@@ -189,11 +191,9 @@ class SettingsFile {
   SettingsFile.parse(String contents) {
     for (String line in contents.split('\n')) {
       line = line.trim();
-      if (line.startsWith('#') || line.isEmpty)
-        continue;
+      if (line.startsWith('#') || line.isEmpty) continue;
       final int index = line.indexOf('=');
-      if (index != -1)
-        values[line.substring(0, index)] = line.substring(index + 1);
+      if (index != -1) values[line.substring(0, index)] = line.substring(index + 1);
     }
   }
 
@@ -228,21 +228,18 @@ class Uuid {
     // Generate xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx / 8-4-4-4-12.
     final int special = 8 + _random.nextInt(4);
 
-    return
-      '${_bitsDigits(16, 4)}${_bitsDigits(16, 4)}-'
-          '${_bitsDigits(16, 4)}-'
-          '4${_bitsDigits(12, 3)}-'
-          '${_printDigits(special, 1)}${_bitsDigits(12, 3)}-'
-          '${_bitsDigits(16, 4)}${_bitsDigits(16, 4)}${_bitsDigits(16, 4)}';
+    return '${_bitsDigits(16, 4)}${_bitsDigits(16, 4)}-'
+        '${_bitsDigits(16, 4)}-'
+        '4${_bitsDigits(12, 3)}-'
+        '${_printDigits(special, 1)}${_bitsDigits(12, 3)}-'
+        '${_bitsDigits(16, 4)}${_bitsDigits(16, 4)}${_bitsDigits(16, 4)}';
   }
 
-  String _bitsDigits(int bitCount, int digitCount) =>
-      _printDigits(_generateBits(bitCount), digitCount);
+  String _bitsDigits(int bitCount, int digitCount) => _printDigits(_generateBits(bitCount), digitCount);
 
   int _generateBits(int bitCount) => _random.nextInt(1 << bitCount);
 
-  String _printDigits(int value, int count) =>
-      value.toRadixString(16).padLeft(count, '0');
+  String _printDigits(int value, int count) => value.toRadixString(16).padLeft(count, '0');
 }
 
 /// Given a data structure which is a Map of String to dynamic values, return
@@ -258,7 +255,7 @@ typedef AsyncCallback = Future<void> Function();
 ///   - has a different initial value for the first callback delay
 ///   - waits for a callback to be complete before it starts the next timer
 class Poller {
-  Poller(this.callback, this.pollingInterval, { this.initialDelay = Duration.zero }) {
+  Poller(this.callback, this.pollingInterval, {this.initialDelay = Duration.zero}) {
     Future<void>.delayed(initialDelay, _handleCallback);
   }
 
@@ -270,8 +267,7 @@ class Poller {
   Timer? _timer;
 
   Future<void> _handleCallback() async {
-    if (_canceled)
-      return;
+    if (_canceled) return;
 
     try {
       await callback();
@@ -279,8 +275,7 @@ class Poller {
       printTrace('Error from poller: $error');
     }
 
-    if (!_canceled)
-      _timer = Timer(pollingInterval, _handleCallback);
+    if (!_canceled) _timer = Timer(pollingInterval, _handleCallback);
   }
 
   /// Cancels the poller.
@@ -299,8 +294,9 @@ class Poller {
 /// The returned [Future<List>] will be shorter than the given `futures` if
 /// it contains nulls.
 Future<List<T>> waitGroup<T>(Iterable<Future<T>> futures) {
-  return Future.wait<T>(futures.where((Future<T> future) => future != null));
+  return Future.wait<T>(futures);
 }
+
 /// The terminal width used by the [wrapText] function if there is no terminal
 /// attached to [io.Stdio], --wrap is on, and --wrap-columns was not specified.
 const int kDefaultTerminalColumns = 100;
@@ -344,7 +340,7 @@ const int kMinColumnWidth = 10;
 ///
 /// The [indent] and [hangingIndent] must be smaller than [columnWidth] when
 /// added together.
-String wrapText(String? text, { int? columnWidth, int? hangingIndent, int? indent, bool? shouldWrap }) {
+String wrapText(String? text, {int? columnWidth, int? hangingIndent, int? indent, bool? shouldWrap}) {
   if (text == null || text.isEmpty) {
     return '';
   }
@@ -403,10 +399,8 @@ String wrapText(String? text, { int? columnWidth, int? hangingIndent, int? inden
 }
 
 void writePidFile(String pidFile) {
-  if (pidFile != null) {
-    // Write our pid to the file.
-    fs.file(pidFile).writeAsStringSync(io.pid.toString());
-  }
+  // Write our pid to the file.
+  fs.file(pidFile).writeAsStringSync(io.pid.toString());
 }
 
 // Used to represent a run of ANSI control sequences next to a visible
@@ -432,8 +426,8 @@ class _AnsiRun {
 /// If [outputPreferences.wrapText] is false, then the text will be returned
 /// simply split at the newlines, but not wrapped. If [shouldWrap] is specified,
 /// then it overrides the [outputPreferences.wrapText] setting.
-List<String> _wrapTextAsLines(String text, { int start = 0, int? columnWidth, bool? shouldWrap }) {
-  if (text == null || text.isEmpty) {
+List<String> _wrapTextAsLines(String text, {int start = 0, int? columnWidth, bool? shouldWrap}) {
+  if (text.isEmpty) {
     return <String>[''];
   }
   assert(columnWidth != null);
@@ -492,7 +486,7 @@ List<String> _wrapTextAsLines(String text, { int start = 0, int? columnWidth, bo
     return result;
   }
 
-  String joinRun(List<_AnsiRun> list, int start, [ int? end ]) {
+  String joinRun(List<_AnsiRun> list, int start, [int? end]) {
     return list.sublist(start, end).map<String>((_AnsiRun run) => run.original).join().trim();
   }
 

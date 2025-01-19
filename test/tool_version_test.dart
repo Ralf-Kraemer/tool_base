@@ -44,12 +44,12 @@ void main() {
     }, overrides: <Type, Generator>{
       FileSystem: () => fs,
       HttpClientFactory: () => () => MockHttpClient(HttpStatus.ok,
-          result: jsonEncode({
-            "scorecard": {
-              "packageName": "sylph",
-              "packageVersion": "0.7.0+2",
-              "updated": "2019-11-21T22:31:32.194619Z",
-              "packageVersionCreated": "2019-11-20T18:17:13.527154Z",
+          result: jsonEncode(<String, Map<String, String>>{
+            'scorecard': <String, String>{
+              'packageName': 'sylph',
+              'packageVersion': '0.7.0+2',
+              'updated': '2019-11-21T22:31:32.194619Z',
+              'packageVersionCreated': '2019-11-20T18:17:13.527154Z',
             }
           })),
     });
@@ -59,7 +59,7 @@ void main() {
       final File settings = fs.file(settingsPath);
       final DateTime now = DateTime.now();
       const String latestVersion = '1.2.3';
-      settings.writeAsStringSync(jsonEncode({
+      settings.writeAsStringSync(jsonEncode(<String, String>{
         ToolVersion.kVersionDate: '$now',
         ToolVersion.kLatestVersion: latestVersion,
       }));
